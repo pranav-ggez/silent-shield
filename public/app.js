@@ -208,7 +208,7 @@ async function findSafepoints() {
     document.getElementById('safe-loader').classList.remove('hidden');
     const query = `[out:json];(node["amenity"="police"](around:5000,${userLocation.lat},${userLocation.lng});node["amenity"="hospital"](around:5000,${userLocation.lat},${userLocation.lng}););out body;`;
     try {
-        const response = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`);
+        const response = await fetch(`https://overpass.kumi.systems/api/interpreter?data=${encodeURIComponent(query)}`);
         const data = await response.json();
         data.elements.forEach(el => {
             const icon = L.divIcon({ className: 'safepoint-marker', html: '<i class="fa-solid fa-shield-cat"></i>', iconSize: [28, 28] });

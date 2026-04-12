@@ -10,20 +10,17 @@ app.use(express.static('public'));
 
 const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
-    port: 587,
-    secure: false, 
+    port: 465, // Try switching from 587 to 465
+    secure: true, // MUST be true for port 465
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
     },
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 10000,
+    connectionTimeout: 20000, // Increase to 20 seconds
+    greetingTimeout: 20000,
+    socketTimeout: 20000,
     dnsLookup: (hostname, options, callback) => {
         require('dns').lookup(hostname, { family: 4 }, callback);
-    },
-    tls: {
-        rejectUnauthorized: false 
     }
 });
 
