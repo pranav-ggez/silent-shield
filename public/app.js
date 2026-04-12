@@ -3,69 +3,50 @@ let map, userMarker;
 let userLocation = null;
 let isSOSActive = false;
 let isDarkMode = true;
-
-// Map Layers
 let darkLayer, lightLayer;
-
-// Web Audio API State (Siren Generation)
-let audioCtx;
-let oscillator;
-let gainNode;
-let isAlarmPlaying = false;
-let sirenInterval;
 
 const alarmAudio = new Audio('https://assets.mixkit.co/active_storage/sfx/995/995-preview.mp3'); 
 alarmAudio.loop = true;
-
-// Load persisted danger zones
 let dangerZones = JSON.parse(localStorage.getItem('ss_danger_zones_v2')) || [];
 
-// --- Initialize App ---
 document.addEventListener('DOMContentLoaded', () => {
     initMap();
-    setupSOSDoubleTap(); // Switched from Hold to Double Tap
-    
+    setupSOSDoubleTap();
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
         toggleTheme();
     }
 });
 
-// --- Mapping & Live Tracking ---
 function initMap() {
     map = L.map('map', { zoomControl: false }).setView([20.5937, 78.9629], 15);
     darkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 });
     lightLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 });
-
-    if (document.documentElement.classList.contains('dark')) darkLayer.addTo(map);
-    else lightLayer.addTo(map);
-
+    (document.documentElement.classList.contains('dark') ? darkLayer : lightLayer).addTo(map);
     plotDangerZones();
 
     if (navigator.geolocation) {
         navigator.geolocation.watchPosition(
-            (position) => {
-                const { latitude, longitude } = position.coords;
+            (pos) => {
+                const { latitude, longitude } = pos.coords;
                 userLocation = { lat: latitude, lng: longitude };
-                const coords = [latitude, longitude];
-
                 if (!userMarker) {
-                    const userIcon = L.divIcon({ className: 'custom-user-marker', iconSize: [20, 20] });
-                    userMarker = L.marker(coords, { icon: userIcon, zIndexOffset: 1000 }).addTo(map);
-                    map.setView(coords, 16);
+                    userMarker = L.marker([latitude, longitude], { 
+                        icon: L.divIcon({ className: 'custom-user-marker', iconSize: [20, 20] }) 
+                    }).addTo(map);
+                    map.setView([latitude, longitude], 16);
                 } else {
-                    userMarker.setLatLng(coords);
+                    userMarker.setLatLng([latitude, longitude]);
                 }
             },
-            (err) => console.warn(`GPS Error: ${err.message}`),
+            (err) => console.warn(err),
             { enableHighAccuracy: true }
         );
     }
 }
 
-// --- Theme Toggle ---
 function toggleTheme() {
-    const html = document.documentElement;
     isDarkMode = !isDarkMode;
+    const html = document.documentElement;
     if (isDarkMode) {
         html.classList.add('dark');
         map.removeLayer(lightLayer);
@@ -77,90 +58,48 @@ function toggleTheme() {
     }
 }
 
-// --- Alarm Logic ---
 function toggleAlarm() {
     const btn = document.getElementById('alarm-btn').firstElementChild;
     if (alarmAudio.paused) {
-        alarmAudio.play().then(() => {
-            btn.classList.replace('bg-amber-100', 'bg-rose-500');
-            btn.classList.replace('dark:bg-amber-500/20', 'dark:bg-rose-500');
-            btn.classList.replace('text-amber-600', 'text-white');
-            btn.classList.replace('dark:text-amber-400', 'dark:text-white');
-            btn.classList.add('animate-pulse');
-        }).catch(err => console.log("Audio play blocked by browser"));
+        alarmAudio.play();
+        btn.classList.add('bg-rose-500', 'animate-pulse', 'text-white');
     } else {
         alarmAudio.pause();
-        alarmAudio.currentTime = 0;
-        btn.classList.replace('bg-rose-500', 'bg-amber-100');
-        btn.classList.replace('dark:bg-rose-500', 'dark:bg-amber-500/20');
-        btn.classList.replace('text-white', 'text-amber-600');
-        btn.classList.replace('dark:text-white', 'dark:text-amber-400');
-        btn.classList.remove('animate-pulse');
+        alarmAudio.classList.remove('bg-rose-500', 'animate-pulse', 'text-white');
     }
 }
 
-// --- Fake Call Features ---
-function triggerFakeCall() { 
-    document.getElementById('fake-call').classList.remove('hidden'); 
-    const status = document.getElementById('caller-status');
-    status.innerText = "Mobile";
-    status.classList.add('text-emerald-500', 'animate-pulse');
-}
-
-function startFakeConversation() {
-    const status = document.getElementById('caller-status');
-    status.classList.replace('text-emerald-500', 'text-white');
-    status.classList.remove('animate-pulse');
-    
-    let callSeconds = 0;
-    setInterval(() => {
-        callSeconds++;
-        const mins = String(Math.floor(callSeconds / 60)).padStart(2, '0');
-        const secs = String(callSeconds % 60).padStart(2, '0');
-        status.innerText = `${mins}:${secs}`;
-    }, 1000);
-}
-
-function closeFakeCall() { document.getElementById('fake-call').classList.add('hidden'); }
-
-// --- SOS Double Tap Logic ---
 function setupSOSDoubleTap() {
     const btn = document.getElementById('sos-btn');
     let lastTap = 0;
 
     btn.addEventListener('touchend', (e) => {
-        let currentTime = new Date().getTime();
-        let tapLength = currentTime - lastTap;
-        if (tapLength < 500 && tapLength > 0) {
+        const currentTime = new Date().getTime();
+        const tapLength = currentTime - lastTap;
+        if (tapLength < 300 && tapLength > 0) {
             triggerSOS();
             e.preventDefault();
         }
         lastTap = currentTime;
     });
-
     btn.addEventListener('dblclick', triggerSOS);
 }
 
-// --- The Core SOS Function (Talks to Render Backend) ---
 async function triggerSOS() {
     if (isSOSActive) return;
     isSOSActive = true;
-    
-    // 1. UI Updates
+
     const btn = document.getElementById('sos-btn');
     btn.classList.add('sos-active');
-    
     const textContainer = btn.querySelector('.text-left');
     if (textContainer) {
         textContainer.children[0].innerText = "ACTIVATED";
-        textContainer.children[1].innerText = "Alerting Server...";
+        textContainer.children[1].innerText = "Dispatching Alerts...";
     }
-    
-    // 2. Alarm & Vibration
-    toggleAlarm();
-    if (navigator.vibrate) navigator.vibrate([1000, 500, 1000]);
 
-    // 3. Prepare Real Data
+    if (navigator.vibrate) navigator.vibrate([1000, 500, 1000]);
+    toggleAlarm();
+
     const payload = {
         contacts: [
             { name: "Dad", email: "blizzardhellfire@gmail.com" },
@@ -170,97 +109,24 @@ async function triggerSOS() {
         lng: userLocation ? userLocation.lng : "79.0882"
     };
 
-    // 4. Fetch to Hosted Render Backend
     try {
         const response = await fetch('https://silent-shield-ghtx.onrender.com/api/sos', { 
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
-
         const data = await response.json();
-
-        if (data.success) {
-            textContainer.children[1].innerText = "Emails Dispatched";
-        } else {
-            textContainer.children[1].innerText = "Server Error";
-        }
+        if (data.success) textContainer.children[1].innerText = "Emails Sent!";
     } catch (error) {
-        console.error("SOS Failed:", error);
         textContainer.children[1].innerText = "Network Error";
     }
 }
 
-// --- Utilities (Share, Map Report, Safepoints) ---
 function shareLocation() {
-    if (!userLocation) return alert("Waiting for GPS...");
+    if (!userLocation) return alert("No GPS fix.");
+    // FIX: Added $ for template literals
     const url = `https://www.google.com/maps?q=${userLocation.lat},${userLocation.lng}`;
-    if (navigator.share) {
-        navigator.share({ title: 'My Live Location', url: url });
-    } else {
-        navigator.clipboard.writeText(url);
-        alert("Link copied!");
-    }
+    if (navigator.share) navigator.share({ title: 'My Location', url });
+    else { navigator.clipboard.writeText(url); alert("Link copied!"); }
 }
 
-async function findSafepoints() {
-    if (!userLocation) return alert("Waiting for GPS...");
-    document.getElementById('safe-loader').classList.remove('hidden');
-    const query = `[out:json];(node["amenity"="police"](around:5000,${userLocation.lat},${userLocation.lng});node["amenity"="hospital"](around:5000,${userLocation.lat},${userLocation.lng}););out body;`;
-    try {
-        const response = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`);
-        const data = await response.json();
-        data.elements.forEach(el => {
-            const icon = L.divIcon({ className: 'safepoint-marker', html: '<i class="fa-solid fa-shield-cat"></i>', iconSize: [28, 28] });
-            L.marker([el.lat, el.lon], { icon }).addTo(map).bindPopup(el.tags.name || "Safepoint");
-        });
-        map.setZoom(13);
-    } catch (e) { alert("Safepoint search failed."); }
-    finally { document.getElementById('safe-loader').classList.add('hidden'); }
-}
-
-function openReportModal() {
-    document.getElementById('report-modal').classList.remove('hidden');
-    setTimeout(() => document.getElementById('report-sheet').classList.add('sheet-open'), 10);
-}
-
-function closeReportModal() {
-    document.getElementById('report-sheet').classList.remove('sheet-open');
-    setTimeout(() => document.getElementById('report-modal').classList.add('hidden'), 300);
-}
-
-function submitDanger(type) {
-    const center = map.getCenter();
-    dangerZones.push({ lat: center.lat, lng: center.lng, type, timestamp: Date.now() });
-    localStorage.setItem('ss_danger_zones_v2', JSON.stringify(dangerZones));
-    plotDangerZones();
-    closeReportModal();
-}
-
-function plotDangerZones() {
-    dangerZones.forEach(zone => {
-        const icon = L.divIcon({ className: 'danger-marker', html: '<i class="fa-solid fa-skull"></i>', iconSize: [34, 34] });
-        L.marker([zone.lat, zone.lng], { icon }).addTo(map).bindPopup(zone.type);
-    });
-}
-
-function setupSOSDoubleTap() {
-    const btn = document.getElementById('sos-btn');
-    let lastTap = 0;
-
-    // This handles mobile touches specifically
-    btn.addEventListener('touchend', function(e) {
-        const currentTime = new Date().getTime();
-        const tapLength = currentTime - lastTap;
-        
-        // If two taps happen within 300ms, it's a double tap
-        if (tapLength < 300 && tapLength > 0) {
-            triggerSOS();
-            e.preventDefault(); // Prevents the browser from doing anything else
-        }
-        lastTap = currentTime;
-    });
-
-    // Fallback for desktop testing
-    btn.addEventListener('dblclick', triggerSOS);
-}

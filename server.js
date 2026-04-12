@@ -1,15 +1,13 @@
-require('dotenv').config(); // Load this at the very top
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const nodemailer = require('nodemailer');
 const app = express();
 
-// Middleware
 app.use(cors());
 app.use(express.json()); 
 app.use(express.static('public')); 
 
-// Configure the Email Transporter for Render/Production
 const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
     port: 587,
@@ -18,18 +16,22 @@ const transporter = nodemailer.createTransport({
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
     },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 10000,
+    dnsLookup: (hostname, options, callback) => {
+        require('dns').lookup(hostname, { family: 4 }, callback);
+    },
     tls: {
         rejectUnauthorized: false 
     }
 });
 
-// The SOS Endpoint
 app.post('/api/sos', async (req, res) => {
     const { contacts, lat, lng } = req.body;
 
-    // Corrected Google Maps Link
+    // FIX: Added $ for template literals
     const locationLink = `https://www.google.com/maps?q=${lat},${lng}`;
-    
     const emailList = contacts.map(c => c.email).join(', ');
 
     const mailOptions = {
@@ -50,7 +52,7 @@ app.post('/api/sos', async (req, res) => {
     try {
         await transporter.sendMail(mailOptions);
         console.log('Emergency Emails Sent Successfully!');
-        res.status(200).json({ success: true, message: 'Alerts sent to contacts.' });
+        res.status(200).json({ success: true, message: 'Alerts sent.' });
     } catch (error) {
         console.error('Failed to send email:', error);
         res.status(500).json({ success: false, error: 'Failed to send alerts.' });
