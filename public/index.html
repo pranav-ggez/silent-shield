@@ -6,10 +6,7 @@
     <title>Silent Shield | Premium Safety</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: { extend: { colors: { primary: '#e11d48' } } }
-        }
+        tailwind.config = { darkMode: 'class', theme: { extend: { colors: { primary: '#e11d48' } } } }
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -17,7 +14,12 @@
 </head>
 <body class="bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-slate-100 overflow-hidden transition-colors duration-300">
 
-    <header class="absolute top-0 w-full z-[400] p-4 flex justify-between items-center bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border-b border-gray-200 dark:border-slate-800 shadow-sm">
+    <div id="gps-error" class="absolute top-0 left-0 w-full bg-rose-600 text-white text-xs font-bold p-2 text-center z-[500] hidden flex justify-between items-center px-4 shadow-lg">
+        <span><i class="fa-solid fa-triangle-exclamation mr-2"></i>Location access denied. Map features disabled.</span>
+        <button onclick="document.getElementById('gps-error').classList.add('hidden')"><i class="fa-solid fa-times"></i></button>
+    </div>
+
+    <header class="absolute top-0 w-full z-[400] p-4 flex justify-between items-center bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border-b border-gray-200 dark:border-slate-800 shadow-sm mt-0" id="main-header">
         <div class="flex items-center gap-2">
             <div class="w-8 h-8 bg-rose-600 rounded-lg flex items-center justify-center text-white shadow-lg shadow-rose-500/40">
                 <i class="fa-solid fa-shield-halved"></i>
@@ -46,7 +48,6 @@
 
     <div class="absolute bottom-4 left-4 right-4 z-[400] max-w-md mx-auto">
         <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-gray-200 dark:border-slate-700 p-4 rounded-3xl shadow-2xl">
-            
             <div class="flex justify-between items-center mb-4 px-2">
                 <button onclick="triggerFakeCall()" class="flex flex-col items-center gap-2 group">
                     <div class="w-12 h-12 bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center group-active:scale-90 transition shadow-sm border border-blue-200 dark:border-blue-500/20">
@@ -130,13 +131,13 @@
                 <i class="fa-solid fa-user text-6xl text-gray-500"></i>
             </div>
             <h3 class="text-4xl font-normal tracking-wide">Dad</h3>
-            <p class="text-gray-400 mt-2">Mobile</p>
+            <p id="caller-status" class="text-emerald-500 mt-2 animate-pulse">Mobile</p>
         </div>
         <div class="flex gap-20 w-full justify-center px-10">
             <button onclick="closeFakeCall()" class="w-20 h-20 bg-red-500 rounded-full flex items-center justify-center text-3xl hover:bg-red-400 transition animate-bounce">
                 <i class="fa-solid fa-phone-slash"></i>
             </button>
-            <button class="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center text-3xl hover:bg-green-400 transition animate-bounce" style="animation-delay: 0.2s">
+            <button onclick="startFakeConversation()" class="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center text-3xl hover:bg-green-400 transition animate-bounce" style="animation-delay: 0.2s">
                 <i class="fa-solid fa-phone"></i>
             </button>
         </div>
