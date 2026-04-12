@@ -30,7 +30,12 @@ const transporter = nodemailer.createTransport({
 app.post('/api/sos', async (req, res) => {
     const { contacts, lat, lng } = req.body;
 
-    // FIX: Added $ for template literals
+    // 1. Safety Check: If Render didn't load the variables, stop here
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+        console.error("❌ CRITICAL: Environment variables are missing on Render!");
+        return res.status(500).json({ success: false, error: 'Server configuration error.' });
+    }
+
     const locationLink = `https://www.google.com/maps?q=${lat},${lng}`;
     const emailList = contacts.map(c => c.email).join(', ');
 
@@ -51,11 +56,12 @@ app.post('/api/sos', async (req, res) => {
 
     try {
         await transporter.sendMail(mailOptions);
-        console.log('Emergency Emails Sent Successfully!');
+        console.log('✅ Emergency Emails Sent Successfully!');
         res.status(200).json({ success: true, message: 'Alerts sent.' });
     } catch (error) {
-        console.error('Failed to send email:', error);
-        res.status(500).json({ success: false, error: 'Failed to send alerts.' });
+        // This will print the EXACT reason for failure in your Render Logs
+        console.error('❌ Nodemailer Error:', error.message);
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
