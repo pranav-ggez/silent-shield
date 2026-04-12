@@ -1,0 +1,74 @@
+/* UI Overrides */
+::-webkit-scrollbar { width: 0px; }
+body {
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+/* Map Theming */
+.leaflet-control-attribution { display: none !important; }
+.leaflet-container { background: transparent; font-family: inherit; }
+
+/* Custom Map Marker UI */
+.custom-user-marker {
+    background-color: #3b82f6;
+    border: 3px solid white;
+    border-radius: 50%;
+    box-shadow: 0 0 20px rgba(59,130,246, 0.8);
+    position: relative;
+}
+.custom-user-marker::after {
+    content: '';
+    position: absolute;
+    inset: -10px;
+    border-radius: 50%;
+    background: rgba(59,130,246, 0.3);
+    animation: pulse-ring 2s infinite;
+}
+
+/* Danger Zone Marker */
+.danger-marker {
+    background-color: #ef4444;
+    border: 3px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 15px rgba(239,68,68, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+/* Safepoint Marker */
+.safepoint-marker {
+    background-color: #10b981;
+    border: 3px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 15px rgba(16,185,129, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+/* Animations */
+@keyframes pulse-ring {
+    0% { transform: scale(0.5); opacity: 1; }
+    100% { transform: scale(1.5); opacity: 0; }
+}
+
+@keyframes pulse-red {
+    0% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.7); }
+    70% { box-shadow: 0 0 0 20px rgba(225, 29, 72, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0); }
+}
+
+.sos-active {
+    animation: pulse-red 1s infinite;
+    background: #9f1239 !important; /* rose-800 */
+}
+
+/* Bottom Sheet Smooth Slide */
+.sheet-open {
+    transform: translateY(0) !important;
+}
