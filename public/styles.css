@@ -1,3 +1,15 @@
+* {
+    -webkit-touch-callout: none; 
+    -webkit-user-select: none;   
+    user-select: none;           
+    -webkit-tap-highlight-color: transparent; 
+}
+
+input, textarea {
+    -webkit-user-select: text;
+    user-select: text;
+}
+
 /* UI Overrides */
 ::-webkit-scrollbar { width: 0px; }
 body {
@@ -72,3 +84,4 @@ body {
 .sheet-open {
     transform: translateY(0) !important;
 }
+

@@ -243,3 +243,24 @@ function plotDangerZones() {
         L.marker([zone.lat, zone.lng], { icon }).addTo(map).bindPopup(zone.type);
     });
 }
+
+function setupSOSDoubleTap() {
+    const btn = document.getElementById('sos-btn');
+    let lastTap = 0;
+
+    // This handles mobile touches specifically
+    btn.addEventListener('touchend', function(e) {
+        const currentTime = new Date().getTime();
+        const tapLength = currentTime - lastTap;
+        
+        // If two taps happen within 300ms, it's a double tap
+        if (tapLength < 300 && tapLength > 0) {
+            triggerSOS();
+            e.preventDefault(); // Prevents the browser from doing anything else
+        }
+        lastTap = currentTime;
+    });
+
+    // Fallback for desktop testing
+    btn.addEventListener('dblclick', triggerSOS);
+}
