@@ -23,7 +23,7 @@
         <button onclick="document.getElementById('gps-error').classList.add('hidden')"><i class="fa-solid fa-times"></i></button>
     </div>
 
-    <header class="absolute top-0 w-full z-[400] p-4 flex justify-between items-center bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border-b border-gray-200 dark:border-slate-800 shadow-sm" id="main-header">
+    <header class="absolute top-0 w-full z-[400] p-4 flex justify-between items-center bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border-b border-gray-200 dark:border-slate-800 shadow-sm">
         <div class="flex items-center gap-2">
             <div class="w-8 h-8 bg-rose-600 rounded-lg flex items-center justify-center text-white shadow-lg shadow-rose-500/40">
                 <i class="fa-solid fa-shield-halved"></i>
@@ -31,12 +31,12 @@
             <span class="font-extrabold tracking-tight text-lg">SILENT SHIELD</span>
         </div>
         <div class="flex items-center gap-3">
-            <button onclick="toggleTheme()" class="w-10 h-10 rounded-full bg-gray-200 dark:bg-slate-800 flex items-center justify-center text-gray-600 dark:text-slate-300">
+            <button onclick="toggleTheme()" class="w-10 h-10 rounded-full bg-gray-200 dark:bg-slate-800 flex items-center justify-center text-gray-600 dark:text-slate-300 transition">
                 <i class="fa-solid fa-moon dark:hidden"></i>
                 <i class="fa-solid fa-sun hidden dark:block"></i>
             </button>
             <div class="text-xs bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-3 py-1.5 rounded-full border border-emerald-200 dark:border-emerald-500/30 flex items-center gap-2 font-semibold">
-                <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div> Live Tracking
+                <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div> Live
             </div>
         </div>
     </header>
@@ -55,34 +55,34 @@
             
             <div class="flex justify-between items-center mb-4 px-2">
                 
-                <div onclick="triggerFakeCall()" class="nav-btn-container group">
-                    <div class="icon-box bg-blue-100 dark:bg-blue-500/20 text-blue-600 border border-blue-200 dark:border-blue-500/20">
-                        <i class="fa-solid fa-phone-flip"></i>
+                <button onclick="triggerFakeCall()" class="flex flex-col items-center gap-2 group">
+                    <div class="w-12 h-12 bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center border border-blue-200 dark:border-blue-500/20 active:scale-90 transition">
+                        <i class="fa-solid fa-phone-flip text-lg"></i>
                     </div>
                     <span class="text-[10px] font-bold text-gray-500 dark:text-slate-400">CALL</span>
-                </div>
+                </button>
 
-                <div onclick="toggleAlarm()" class="nav-btn-container group">
-                    <div id="alarm-btn-box" class="icon-box bg-amber-100 dark:bg-amber-500/20 text-amber-600 border border-amber-200 dark:border-amber-500/20">
-                        <i class="fa-solid fa-bell"></i>
+                <button onclick="toggleAlarm()" id="alarm-btn" class="flex flex-col items-center gap-2 group">
+                    <div class="nav-icon-box w-12 h-12 bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded-2xl flex items-center justify-center border border-amber-200 dark:border-amber-500/20 active:scale-90 transition">
+                        <i class="fa-solid fa-bell text-lg"></i>
                     </div>
                     <span class="text-[10px] font-bold text-gray-500 dark:text-slate-400">ALARM</span>
-                </div>
+                </button>
 
-                <div onclick="findSafepoints()" class="nav-btn-container group relative">
-                    <div class="icon-box bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 border border-emerald-200 dark:border-emerald-500/20">
-                        <i class="fa-solid fa-hospital"></i>
+                <button onclick="findSafepoints()" class="flex flex-col items-center gap-2 group relative">
+                    <div class="w-12 h-12 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center border border-emerald-200 dark:border-emerald-500/20 active:scale-90 transition">
+                        <i class="fa-solid fa-hospital text-lg"></i>
+                        <div id="safe-loader" class="absolute inset-0 border-2 border-emerald-500 border-t-transparent rounded-2xl animate-spin hidden"></div>
                     </div>
-                    <div id="safe-loader" class="absolute top-0 w-12 h-12 border-2 border-emerald-500 border-t-transparent rounded-2xl animate-spin hidden"></div>
                     <span class="text-[10px] font-bold text-gray-500 dark:text-slate-400">SAFE MAP</span>
-                </div>
+                </button>
 
-                <div onclick="openReportModal()" class="nav-btn-container group">
-                    <div class="icon-box bg-orange-100 dark:bg-orange-500/20 text-orange-600 border border-orange-200 dark:border-orange-500/20">
-                        <i class="fa-solid fa-location-dot"></i>
+                <button onclick="openReportModal()" class="flex flex-col items-center gap-2 group">
+                    <div class="w-12 h-12 bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 rounded-2xl flex items-center justify-center border border-orange-200 dark:border-orange-500/20 active:scale-90 transition">
+                        <i class="fa-solid fa-location-dot text-lg"></i>
                     </div>
                     <span class="text-[10px] font-bold text-gray-500 dark:text-slate-400">REPORT</span>
-                </div>
+                </button>
             </div>
 
             <div class="flex gap-3">
@@ -92,7 +92,7 @@
                     </div>
                     <div class="text-left text-white">
                         <div class="text-lg font-black leading-none">SOS</div>
-                        <div class="text-[9px] uppercase font-bold opacity-80 tracking-widest">Tap Twice!</div>
+                        <div class="status-text text-[9px] uppercase font-bold opacity-80 tracking-widest">Tap Twice!</div>
                     </div>
                 </button>
                 
@@ -105,17 +105,23 @@
     </div>
 
     <div id="report-modal" class="fixed inset-0 z-[500] bg-black/60 backdrop-blur-sm flex items-end justify-center hidden">
-        <div class="bg-white dark:bg-slate-900 w-full max-w-md rounded-t-[2rem] p-6 border-t border-gray-200 dark:border-slate-700 transform transition-transform translate-y-full" id="report-sheet">
+        <div id="report-sheet" class="bg-white dark:bg-slate-900 w-full max-w-md rounded-t-[2rem] p-6 border-t border-gray-200 dark:border-slate-700 transform transition-transform translate-y-full">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="font-bold text-xl text-gray-900 dark:text-white">Mark Danger Zone</h3>
-                <button onclick="closeReportModal()" class="w-8 h-8 bg-gray-100 dark:bg-slate-800 rounded-full flex items-center justify-center"><i class="fa-solid fa-times"></i></button>
+                <h3 class="font-bold text-xl dark:text-white">Mark Danger Zone</h3>
+                <button onclick="closeReportModal()" class="w-8 h-8 bg-gray-100 dark:bg-slate-800 rounded-full flex items-center justify-center text-gray-500"><i class="fa-solid fa-times"></i></button>
             </div>
-            <div class="grid grid-cols-2 gap-3 mb-4">
-                <button onclick="submitDanger('Harassment')" class="bg-gray-50 dark:bg-slate-800 border p-4 rounded-2xl text-sm font-bold flex flex-col items-center gap-2">
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <button onclick="submitDanger('Harassment')" class="bg-gray-50 dark:bg-slate-800 p-4 rounded-2xl text-sm font-bold flex flex-col items-center gap-2 border border-gray-200 dark:border-slate-700 active:scale-95 transition">
                     <i class="fa-solid fa-person-harassing text-rose-500 text-xl"></i> Harassment
                 </button>
-                <button onclick="submitDanger('Poor Lighting')" class="bg-gray-50 dark:bg-slate-800 border p-4 rounded-2xl text-sm font-bold flex flex-col items-center gap-2">
+                <button onclick="submitDanger('Suspicious')" class="bg-gray-50 dark:bg-slate-800 p-4 rounded-2xl text-sm font-bold flex flex-col items-center gap-2 border border-gray-200 dark:border-slate-700 active:scale-95 transition">
+                    <i class="fa-solid fa-eye text-orange-500 text-xl"></i> Suspicious
+                </button>
+                <button onclick="submitDanger('No Lights')" class="bg-gray-50 dark:bg-slate-800 p-4 rounded-2xl text-sm font-bold flex flex-col items-center gap-2 border border-gray-200 dark:border-slate-700 active:scale-95 transition">
                     <i class="fa-solid fa-lightbulb text-yellow-500 text-xl"></i> No Lights
+                </button>
+                <button onclick="submitDanger('Deserted')" class="bg-gray-50 dark:bg-slate-800 p-4 rounded-2xl text-sm font-bold flex flex-col items-center gap-2 border border-gray-200 dark:border-slate-700 active:scale-95 transition">
+                    <i class="fa-solid fa-ghost text-purple-500 text-xl"></i> Deserted
                 </button>
             </div>
         </div>
