@@ -204,19 +204,60 @@ function shareLocation() {
 }
 
 async function findSafepoints() {
-    if (!userLocation) return alert("Waiting for GPS...");
+    if (!userLocation) return alert("Waiting for live GPS fix...");
     document.getElementById('safe-loader').classList.remove('hidden');
-    const query = `[out:json];(node["amenity"="police"](around:5000,${userLocation.lat},${userLocation.lng});node["amenity"="hospital"](around:5000,${userLocation.lat},${userLocation.lng}););out body;`;
+
+    // Expanded query to include clinics and pharmacies
+    const query = `
+        [out:json][timeout:25];
+        (
+          node["amenity"~"police|hospital|clinic|pharmacy"](around:5000,${userLocation.lat},${userLocation.lng});
+          way["amenity"~"police|hospital|clinic|pharmacy"](around:5000,${userLocation.lat},${userLocation.lng});
+        );
+        out center;
+    `;
+    
     try {
+        // Using the Kumi mirror (more reliable)
         const response = await fetch(`https://overpass.kumi.systems/api/interpreter?data=${encodeURIComponent(query)}`);
+        if (!response.ok) throw new Error("API Limit");
+        
         const data = await response.json();
+        let count = 0;
+
+        // Clean old safepoints if necessary (optional)
+        // map.eachLayer(layer => { if(layer.options.className === 'safepoint-marker') map.removeLayer(layer); });
+
         data.elements.forEach(el => {
-            const icon = L.divIcon({ className: 'safepoint-marker', html: '<i class="fa-solid fa-shield-cat"></i>', iconSize: [28, 28] });
-            L.marker([el.lat, el.lon], { icon }).addTo(map).bindPopup(el.tags.name || "Safepoint");
+            const lat = el.lat || (el.center && el.center.lat);
+            const lon = el.lon || (el.center && el.center.lon);
+            
+            if (lat && lon) {
+                const safeIcon = L.divIcon({ 
+                    className: 'safepoint-marker', 
+                    html: '<i class="fa-solid fa-shield-halved"></i>', 
+                    iconSize: [30, 30] 
+                });
+
+                L.marker([lat, lon], { icon: safeIcon })
+                 .addTo(map)
+                 .bindPopup(`<b class="text-gray-800">${el.tags.name || el.tags.amenity.toUpperCase()}</b>`);
+                count++;
+            }
         });
-        map.setZoom(13);
-    } catch (e) { alert("Safepoint search failed."); }
-    finally { document.getElementById('safe-loader').classList.add('hidden'); }
+
+        if (count > 0) {
+            map.setZoom(13);
+        } else {
+            alert("No registered safepoints found within 5km.");
+        }
+
+    } catch (e) { 
+        console.error(e);
+        alert("Safepoints API is currently busy. Please try again."); 
+    } finally { 
+        document.getElementById('safe-loader').classList.add('hidden'); 
+    }
 }
 
 function openReportModal() {
