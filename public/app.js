@@ -1,13 +1,10 @@
-// --- Global State ---
 let map, userMarker;
 let userLocation = null;
 let isSOSActive = false;
 let isDarkMode = true;
 
-// Map Layers
 let darkLayer, lightLayer;
 
-// Web Audio API State (Siren Generation)
 let audioCtx;
 let oscillator;
 let gainNode;
@@ -17,20 +14,20 @@ let sirenInterval;
 const alarmAudio = new Audio('https://assets.mixkit.co/active_storage/sfx/995/995-preview.mp3'); 
 alarmAudio.loop = true;
 
-// Load persisted danger zones
+
 let dangerZones = JSON.parse(localStorage.getItem('ss_danger_zones_v2')) || [];
 
-// --- Initialize App ---
+
 document.addEventListener('DOMContentLoaded', () => {
     initMap();
-    setupSOSDoubleTap(); // Switched from Hold to Double Tap
+    setupSOSDoubleTap(); 
     
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
         toggleTheme();
     }
 });
 
-// --- Mapping & Live Tracking ---
+
 function initMap() {
     map = L.map('map', { zoomControl: false }).setView([20.5937, 78.9629], 15);
     darkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 });
@@ -62,7 +59,7 @@ function initMap() {
     }
 }
 
-// --- Theme Toggle ---
+
 function toggleTheme() {
     const html = document.documentElement;
     isDarkMode = !isDarkMode;
@@ -77,7 +74,6 @@ function toggleTheme() {
     }
 }
 
-// --- Alarm Logic ---
 function toggleAlarm() {
     const btn = document.getElementById('alarm-btn').firstElementChild;
     if (alarmAudio.paused) {
@@ -99,7 +95,6 @@ function toggleAlarm() {
     }
 }
 
-// --- Fake Call Features ---
 function triggerFakeCall() { 
     document.getElementById('fake-call').classList.remove('hidden'); 
     const status = document.getElementById('caller-status');
@@ -123,7 +118,6 @@ function startFakeConversation() {
 
 function closeFakeCall() { document.getElementById('fake-call').classList.add('hidden'); }
 
-// --- SOS Double Tap Logic ---
 function setupSOSDoubleTap() {
     const btn = document.getElementById('sos-btn');
     let lastTap = 0;
@@ -141,7 +135,7 @@ function setupSOSDoubleTap() {
     btn.addEventListener('dblclick', triggerSOS);
 }
 
-// --- The Core SOS Function (Talks to Render Backend) ---
+
 async function triggerSOS() {
     if (isSOSActive) return;
     isSOSActive = true;
@@ -156,11 +150,10 @@ async function triggerSOS() {
         textContainer.children[1].innerText = "Alerting Server...";
     }
     
-    // 2. Alarm & Vibration
     toggleAlarm();
     if (navigator.vibrate) navigator.vibrate([1000, 500, 1000]);
 
-    // 3. Prepare Real Data
+
     const payload = {
         contacts: [
             { name: "Dad", email: "blizzardhellfire@gmail.com" },
@@ -170,7 +163,6 @@ async function triggerSOS() {
         lng: userLocation ? userLocation.lng : "79.0882"
     };
 
-    // 4. Fetch to Hosted Render Backend
     try {
         const response = await fetch('https://silent-shield-ghtx.onrender.com/api/sos', { 
             method: 'POST',
@@ -191,7 +183,7 @@ async function triggerSOS() {
     }
 }
 
-// --- Utilities (Share, Map Report, Safepoints) ---
+
 function shareLocation() {
     if (!userLocation) return alert("Waiting for GPS...");
     const url = `https://www.google.com/maps?q=${userLocation.lat},${userLocation.lng}`;
@@ -207,7 +199,7 @@ async function findSafepoints() {
     if (!userLocation) return alert("Waiting for live GPS fix...");
     document.getElementById('safe-loader').classList.remove('hidden');
 
-    // Expanded query to include clinics and pharmacies
+   
     const query = `
         [out:json][timeout:25];
         (
@@ -218,15 +210,13 @@ async function findSafepoints() {
     `;
     
     try {
-        // Using the Kumi mirror (more reliable)
+        
         const response = await fetch(`https://overpass.kumi.systems/api/interpreter?data=${encodeURIComponent(query)}`);
         if (!response.ok) throw new Error("API Limit");
         
         const data = await response.json();
         let count = 0;
 
-        // Clean old safepoints if necessary (optional)
-        // map.eachLayer(layer => { if(layer.options.className === 'safepoint-marker') map.removeLayer(layer); });
 
         data.elements.forEach(el => {
             const lat = el.lat || (el.center && el.center.lat);

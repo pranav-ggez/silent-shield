@@ -3,10 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Silent Shield | Premium Safety</title>
+    <title>Silent Shield | Safety Reimagined</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = { darkMode: 'class', theme: { extend: { colors: { primary: '#e11d48' } } } }
+        tailwind.config = { 
+            darkMode: 'class', 
+            theme: { extend: { colors: { primary: '#e11d48' } } } 
+        }
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -15,11 +19,11 @@
 <body class="bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-slate-100 overflow-hidden transition-colors duration-300">
 
     <div id="gps-error" class="absolute top-0 left-0 w-full bg-rose-600 text-white text-xs font-bold p-2 text-center z-[500] hidden flex justify-between items-center px-4 shadow-lg">
-        <span><i class="fa-solid fa-triangle-exclamation mr-2"></i>Location access denied. Map features disabled.</span>
+        <span><i class="fa-solid fa-triangle-exclamation mr-2"></i>GPS Signal Lost. Features may be limited.</span>
         <button onclick="document.getElementById('gps-error').classList.add('hidden')"><i class="fa-solid fa-times"></i></button>
     </div>
 
-    <header class="absolute top-0 w-full z-[400] p-4 flex justify-between items-center bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border-b border-gray-200 dark:border-slate-800 shadow-sm mt-0" id="main-header">
+    <header class="absolute top-0 w-full z-[400] p-4 flex justify-between items-center bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border-b border-gray-200 dark:border-slate-800 shadow-sm" id="main-header">
         <div class="flex items-center gap-2">
             <div class="w-8 h-8 bg-rose-600 rounded-lg flex items-center justify-center text-white shadow-lg shadow-rose-500/40">
                 <i class="fa-solid fa-shield-halved"></i>
@@ -27,12 +31,12 @@
             <span class="font-extrabold tracking-tight text-lg">SILENT SHIELD</span>
         </div>
         <div class="flex items-center gap-3">
-            <button onclick="toggleTheme()" class="w-10 h-10 rounded-full bg-gray-200 dark:bg-slate-800 flex items-center justify-center text-gray-600 dark:text-slate-300 hover:bg-gray-300 dark:hover:bg-slate-700 transition">
+            <button onclick="toggleTheme()" class="w-10 h-10 rounded-full bg-gray-200 dark:bg-slate-800 flex items-center justify-center text-gray-600 dark:text-slate-300">
                 <i class="fa-solid fa-moon dark:hidden"></i>
                 <i class="fa-solid fa-sun hidden dark:block"></i>
             </button>
             <div class="text-xs bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-3 py-1.5 rounded-full border border-emerald-200 dark:border-emerald-500/30 flex items-center gap-2 font-semibold">
-                <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div> Live
+                <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div> Live Tracking
             </div>
         </div>
     </header>
@@ -41,39 +45,44 @@
     
     <div class="absolute inset-0 z-[10] pointer-events-none flex items-center justify-center">
         <div class="relative flex items-center justify-center">
-            <i class="fa-solid fa-crosshairs text-3xl text-gray-800/50 dark:text-white/50 drop-shadow-md"></i>
+            <i class="fa-solid fa-crosshairs text-3xl text-gray-800/30 dark:text-white/30"></i>
             <div class="absolute w-1 h-1 bg-rose-500 rounded-full"></div>
         </div>
     </div>
 
     <div class="absolute bottom-4 left-4 right-4 z-[400] max-w-md mx-auto">
         <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-gray-200 dark:border-slate-700 p-4 rounded-3xl shadow-2xl">
+            
             <div class="flex justify-between items-center mb-4 px-2">
-                <button onclick="triggerFakeCall()" class="flex flex-col items-center gap-2 group">
-                    <div class="w-12 h-12 bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center group-active:scale-90 transition shadow-sm border border-blue-200 dark:border-blue-500/20">
-                        <i class="fa-solid fa-phone-flip text-lg"></i>
+                
+                <div onclick="triggerFakeCall()" class="nav-btn-container group">
+                    <div class="icon-box bg-blue-100 dark:bg-blue-500/20 text-blue-600 border border-blue-200 dark:border-blue-500/20">
+                        <i class="fa-solid fa-phone-flip"></i>
                     </div>
                     <span class="text-[10px] font-bold text-gray-500 dark:text-slate-400">CALL</span>
-                </button>
-                <button onclick="toggleAlarm()" id="alarm-btn" class="flex flex-col items-center gap-2 group">
-                    <div class="w-12 h-12 bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded-2xl flex items-center justify-center group-active:scale-90 transition shadow-sm border border-amber-200 dark:border-amber-500/20">
-                        <i class="fa-solid fa-bell text-lg"></i>
+                </div>
+
+                <div onclick="toggleAlarm()" class="nav-btn-container group">
+                    <div id="alarm-btn-box" class="icon-box bg-amber-100 dark:bg-amber-500/20 text-amber-600 border border-amber-200 dark:border-amber-500/20">
+                        <i class="fa-solid fa-bell"></i>
                     </div>
                     <span class="text-[10px] font-bold text-gray-500 dark:text-slate-400">ALARM</span>
-                </button>
-                <button onclick="findSafepoints()" class="flex flex-col items-center gap-2 group relative">
-                    <div class="w-12 h-12 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center group-active:scale-90 transition shadow-sm border border-emerald-200 dark:border-emerald-500/20">
-                        <i class="fa-solid fa-hospital text-lg"></i>
-                        <div id="safe-loader" class="absolute inset-0 border-2 border-emerald-500 border-t-transparent rounded-2xl animate-spin hidden"></div>
+                </div>
+
+                <div onclick="findSafepoints()" class="nav-btn-container group relative">
+                    <div class="icon-box bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 border border-emerald-200 dark:border-emerald-500/20">
+                        <i class="fa-solid fa-hospital"></i>
                     </div>
+                    <div id="safe-loader" class="absolute top-0 w-12 h-12 border-2 border-emerald-500 border-t-transparent rounded-2xl animate-spin hidden"></div>
                     <span class="text-[10px] font-bold text-gray-500 dark:text-slate-400">SAFE MAP</span>
-                </button>
-                <button onclick="openReportModal()" class="flex flex-col items-center gap-2 group">
-                    <div class="w-12 h-12 bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 rounded-2xl flex items-center justify-center group-active:scale-90 transition shadow-sm border border-orange-200 dark:border-orange-500/20">
-                        <i class="fa-solid fa-location-dot text-lg"></i>
+                </div>
+
+                <div onclick="openReportModal()" class="nav-btn-container group">
+                    <div class="icon-box bg-orange-100 dark:bg-orange-500/20 text-orange-600 border border-orange-200 dark:border-orange-500/20">
+                        <i class="fa-solid fa-location-dot"></i>
                     </div>
                     <span class="text-[10px] font-bold text-gray-500 dark:text-slate-400">REPORT</span>
-                </button>
+                </div>
             </div>
 
             <div class="flex gap-3">
@@ -82,12 +91,12 @@
                         <i class="fa-solid fa-fingerprint text-white text-xl"></i>
                     </div>
                     <div class="text-left text-white">
-                        <div class="text-lg font-black tracking-wide leading-none">SOS</div>
+                        <div class="text-lg font-black leading-none">SOS</div>
                         <div class="text-[9px] uppercase font-bold opacity-80 tracking-widest">Tap Twice!</div>
                     </div>
                 </button>
                 
-                <button onclick="shareLocation()" class="w-1/3 bg-gray-100 dark:bg-slate-800 h-16 rounded-2xl flex flex-col items-center justify-center gap-1 active:scale-95 transition-transform border border-gray-200 dark:border-slate-700 hover:bg-gray-200 dark:hover:bg-slate-700">
+                <button onclick="shareLocation()" class="w-1/3 bg-gray-100 dark:bg-slate-800 h-16 rounded-2xl flex flex-col items-center justify-center gap-1 active:scale-95 transition-transform border border-gray-200 dark:border-slate-700">
                     <i class="fa-solid fa-share-nodes text-blue-500 dark:text-blue-400 text-xl"></i>
                     <span class="text-[10px] font-bold text-gray-600 dark:text-slate-400">SHARE</span>
                 </button>
@@ -95,51 +104,35 @@
         </div>
     </div>
 
-    <div id="report-modal" class="fixed inset-0 z-[500] bg-black/60 backdrop-blur-sm flex items-end justify-center hidden pb-0 transition-opacity">
+    <div id="report-modal" class="fixed inset-0 z-[500] bg-black/60 backdrop-blur-sm flex items-end justify-center hidden">
         <div class="bg-white dark:bg-slate-900 w-full max-w-md rounded-t-[2rem] p-6 border-t border-gray-200 dark:border-slate-700 transform transition-transform translate-y-full" id="report-sheet">
-            <div class="flex justify-between items-center mb-2">
-                <h3 class="font-bold text-xl text-gray-900 dark:text-white"><i class="fa-solid fa-location-crosshairs text-rose-500 mr-2"></i>Mark Danger Zone</h3>
-                <button onclick="closeReportModal()" class="w-8 h-8 bg-gray-100 dark:bg-slate-800 rounded-full flex items-center justify-center text-gray-500 dark:text-slate-400"><i class="fa-solid fa-times"></i></button>
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-xl text-gray-900 dark:text-white">Mark Danger Zone</h3>
+                <button onclick="closeReportModal()" class="w-8 h-8 bg-gray-100 dark:bg-slate-800 rounded-full flex items-center justify-center"><i class="fa-solid fa-times"></i></button>
             </div>
-            <p class="text-xs text-gray-500 dark:text-slate-400 mb-6 font-medium">Pan the map to the exact location using the center crosshairs, then select the issue below.</p>
-            
             <div class="grid grid-cols-2 gap-3 mb-4">
-                <button onclick="submitDanger('Harassment')" class="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 hover:border-rose-500 p-4 rounded-2xl text-sm font-bold flex flex-col items-center gap-3 transition shadow-sm text-gray-700 dark:text-slate-200">
-                    <div class="w-10 h-10 bg-rose-100 dark:bg-rose-500/20 rounded-full flex items-center justify-center"><i class="fa-solid fa-person-harassing text-rose-500"></i></div>
-                    Harassment
+                <button onclick="submitDanger('Harassment')" class="bg-gray-50 dark:bg-slate-800 border p-4 rounded-2xl text-sm font-bold flex flex-col items-center gap-2">
+                    <i class="fa-solid fa-person-harassing text-rose-500 text-xl"></i> Harassment
                 </button>
-                <button onclick="submitDanger('Suspicious Person')" class="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 hover:border-orange-500 p-4 rounded-2xl text-sm font-bold flex flex-col items-center gap-3 transition shadow-sm text-gray-700 dark:text-slate-200">
-                    <div class="w-10 h-10 bg-orange-100 dark:bg-orange-500/20 rounded-full flex items-center justify-center"><i class="fa-solid fa-eye text-orange-500"></i></div>
-                    Suspicious
-                </button>
-                <button onclick="submitDanger('Poor Lighting')" class="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 hover:border-yellow-500 p-4 rounded-2xl text-sm font-bold flex flex-col items-center gap-3 transition shadow-sm text-gray-700 dark:text-slate-200">
-                    <div class="w-10 h-10 bg-yellow-100 dark:bg-yellow-500/20 rounded-full flex items-center justify-center"><i class="fa-solid fa-lightbulb text-yellow-500"></i></div>
-                    No Lights
-                </button>
-                <button onclick="submitDanger('Deserted Area')" class="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 hover:border-purple-500 p-4 rounded-2xl text-sm font-bold flex flex-col items-center gap-3 transition shadow-sm text-gray-700 dark:text-slate-200">
-                    <div class="w-10 h-10 bg-purple-100 dark:bg-purple-500/20 rounded-full flex items-center justify-center"><i class="fa-solid fa-ghost text-purple-500"></i></div>
-                    Deserted
+                <button onclick="submitDanger('Poor Lighting')" class="bg-gray-50 dark:bg-slate-800 border p-4 rounded-2xl text-sm font-bold flex flex-col items-center gap-2">
+                    <i class="fa-solid fa-lightbulb text-yellow-500 text-xl"></i> No Lights
                 </button>
             </div>
         </div>
     </div>
 
-    <div id="fake-call" class="fixed inset-0 z-[600] bg-[#000] hidden flex flex-col items-center justify-around py-20 text-center text-white">
+    <div id="fake-call" class="fixed inset-0 z-[600] bg-black hidden flex flex-col items-center justify-around py-20 text-center text-white">
         <div>
             <div class="text-gray-400 text-lg mb-8">Incoming call</div>
             <div class="w-32 h-32 bg-gray-800 rounded-full mx-auto mb-6 flex items-center justify-center border border-gray-700">
                 <i class="fa-solid fa-user text-6xl text-gray-500"></i>
             </div>
-            <h3 class="text-4xl font-normal tracking-wide">Dad</h3>
+            <h3 class="text-4xl">Dad</h3>
             <p id="caller-status" class="text-emerald-500 mt-2 animate-pulse">Mobile</p>
         </div>
-        <div class="flex gap-20 w-full justify-center px-10">
-            <button onclick="closeFakeCall()" class="w-20 h-20 bg-red-500 rounded-full flex items-center justify-center text-3xl hover:bg-red-400 transition animate-bounce">
-                <i class="fa-solid fa-phone-slash"></i>
-            </button>
-            <button onclick="startFakeConversation()" class="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center text-3xl hover:bg-green-400 transition animate-bounce" style="animation-delay: 0.2s">
-                <i class="fa-solid fa-phone"></i>
-            </button>
+        <div class="flex gap-20">
+            <button onclick="closeFakeCall()" class="w-20 h-20 bg-red-500 rounded-full flex items-center justify-center text-3xl animate-bounce"><i class="fa-solid fa-phone-slash"></i></button>
+            <button onclick="startFakeConversation()" class="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center text-3xl animate-bounce" style="animation-delay: 0.2s"><i class="fa-solid fa-phone"></i></button>
         </div>
     </div>
 

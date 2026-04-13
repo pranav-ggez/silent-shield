@@ -1,3 +1,4 @@
+/* --- 1. GLOBAL STYLES & MOBILE OPTIMIZATIONS */
 * {
     -webkit-touch-callout: none; 
     -webkit-user-select: none;   
@@ -10,19 +11,19 @@ input, textarea {
     user-select: text;
 }
 
-/* UI Overrides */
 ::-webkit-scrollbar { width: 0px; }
+
 body {
     user-select: none;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
+    overflow-x: hidden; /* Prevents side-scrolling on mobile */
 }
 
-/* Map Theming */
+/* --- 2. MAP & MARKER UI */
 .leaflet-control-attribution { display: none !important; }
 .leaflet-container { background: transparent; font-family: inherit; }
 
-/* Custom Map Marker UI */
 .custom-user-marker {
     background-color: #3b82f6;
     border: 3px solid white;
@@ -39,7 +40,6 @@ body {
     animation: pulse-ring 2s infinite;
 }
 
-/* Danger Zone Marker */
 .danger-marker {
     background-color: #ef4444;
     border: 3px solid #fff;
@@ -51,9 +51,8 @@ body {
     color: white;
 }
 
-/* Safepoint Marker Styling */
 .safepoint-marker {
-    background: #10b981; /* Emerald 500 */
+    background: #10b981; 
     color: white;
     border-radius: 50%;
     display: flex;
@@ -61,6 +60,7 @@ body {
     justify-content: center;
     border: 2px solid white;
     box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+    animation: marker-glow 2s infinite;
 }
 
 .safepoint-marker i {
@@ -68,10 +68,6 @@ body {
     line-height: 1;
 }
 
-/* Pulse animation to make them stand out */
-.safepoint-marker {
-    animation: marker-glow 2s infinite;
-}
 
 @keyframes marker-glow {
     0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
@@ -79,7 +75,6 @@ body {
     100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
 }
 
-/* Animations */
 @keyframes pulse-ring {
     0% { transform: scale(0.5); opacity: 1; }
     100% { transform: scale(1.5); opacity: 0; }
@@ -93,11 +88,53 @@ body {
 
 .sos-active {
     animation: pulse-red 1s infinite;
-    background: #9f1239 !important; /* rose-800 */
+    background: #9f1239 !important; 
 }
 
-/* Bottom Sheet Smooth Slide */
 .sheet-open {
     transform: translateY(0) !important;
 }
 
+
+.nav-btn-container {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+
+.icon-box {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 12px !important;
+    margin-bottom: 4px !important;
+}
+
+
+.icon-box i {
+    line-height: 0 !important; /* CRITICAL: Stops the "floating" look */
+    font-size: 1.2rem !important;
+    display: block !important;
+}
+
+#sos-btn {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 12px !important;
+}
+
+#sos-btn .sos-icon-circle {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 50px !important;
+    height: 50px !important;
+    border-radius: 50% !important;
+    background: rgba(255,255,255,0.2) !important;
+}

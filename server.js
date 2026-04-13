@@ -11,7 +11,7 @@ app.use(express.static('public'));
 const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
     port: 465, // Try switching from 587 to 465
-    secure: true, // MUST be true for port 465
+    secure: true, 
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
@@ -27,7 +27,7 @@ const transporter = nodemailer.createTransport({
 app.post('/api/sos', async (req, res) => {
     const { contacts, lat, lng } = req.body;
 
-    // 1. Safety Check: If Render didn't load the variables, stop here
+    
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
         console.error("❌ CRITICAL: Environment variables are missing on Render!");
         return res.status(500).json({ success: false, error: 'Server configuration error.' });
@@ -53,11 +53,11 @@ app.post('/api/sos', async (req, res) => {
 
     try {
         await transporter.sendMail(mailOptions);
-        console.log('✅ Emergency Emails Sent Successfully!');
+        console.log('Emergency Emails Sent Successfully!');
         res.status(200).json({ success: true, message: 'Alerts sent.' });
     } catch (error) {
-        // This will print the EXACT reason for failure in your Render Logs
-        console.error('❌ Nodemailer Error:', error.message);
+        
+        console.error('Nodemailer Error:', error.message);
         res.status(500).json({ success: false, error: error.message });
     }
 });
