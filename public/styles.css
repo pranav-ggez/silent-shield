@@ -138,3 +138,26 @@ body {
     border-radius: 50% !important;
     background: rgba(255,255,255,0.2) !important;
 }
+
+/* Glassmorphism */
+
+/* Make markers look premium */
+.safepoint-marker i {
+    filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.6));
+    font-size: 24px;
+}
+
+.custom-user-marker {
+    background: none !important;
+    border: none !important;
+}
+
+/* Add a vignette effect to the map so the edges look dark and focused */
+#map::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    box-shadow: inset 0 0 100px rgba(0,0,0,0.5);
+    pointer-events: none;
+    z-index: 401;
+}
