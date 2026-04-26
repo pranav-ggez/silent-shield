@@ -1,8 +1,8 @@
-🛡️ Silent Shield - Safety SOS
+# 🛡️ Silent Shield - Safety SOS
 
 Silent Shield is a production-ready, full-stack Progressive Web Application (PWA) designed to provide immediate assistance to women in distress. It combines real-time location tracking, automated emergency alerts, and stealth features to ensure personal safety.
 
-🚀 Key Features
+# 🚀 Key Features
 
 Double-Tap SOS: Instantly triggers an emergency protocol.
 
@@ -16,7 +16,7 @@ Stealth Utilities: Includes a "Fake Incoming Call" simulator and a high-frequenc
 
 Theme Support: Fully responsive Dark and Light mode UI.
 
-🛠️ Tech Stack
+# 🛠️ Tech Stack
 Frontend: Vanilla JS (ES6+), Tailwind CSS, Leaflet.js.
 
 Backend: Node.js, Express.js.
@@ -25,7 +25,7 @@ Communications: Nodemailer (SMTP Integration).
 
 Deployment: Render (Full-Stack Hosting).
 
-📦 Installation & Setup
+# 📦 Installation & Setup
 Clone the repository.
 
 Run npm install to install dependencies.
