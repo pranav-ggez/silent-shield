@@ -61,7 +61,7 @@ function initMap() {
                     userMarker = L.marker(coords, { icon: userIcon, zIndexOffset: 1000 }).addTo(map);
                     map.setView(coords, 16);
 
-                    autoLoadSafeZones(latitude, longitude);
+                    //BAD CODE but let it stay - autoLoadSafeZones(latitude, longitude);
                 } else {
                     userMarker.setLatLng(coords);
                 }
@@ -269,6 +269,7 @@ function setupSOSDoubleTap() {
 async function triggerSOS() {
     if (isSOSActive) return;
     isSOSActive = true;
+
     const btn = document.getElementById('sos-btn');
     btn.classList.add('sos-active');
     const textContainer = btn.querySelector('.text-left');
@@ -276,6 +277,7 @@ async function triggerSOS() {
         textContainer.children[0].innerText = "ACTIVATED";
         textContainer.children[1].innerText = "Alerting Server...";
     }
+
     toggleAlarm();
     if (navigator.vibrate) navigator.vibrate([1000, 500, 1000]);
 
@@ -286,16 +288,50 @@ async function triggerSOS() {
         { name: "Dad", email: "blizzardhellfire@gmail.com" },
         { name: "Support", email: "vedasawant2005@gmail.com" }
     ]));
-
     if (lastRecordedBlob) { formData.append('evidence', lastRecordedBlob, 'evidence.webm'); }
 
     try {
         const response = await fetch('http://localhost:3000/api/sos', { method: 'POST', body: formData });
         const data = await response.json();
-        if (data.success) { textContainer.children[1].innerText = "Emails Dispatched"; }
-        else { textContainer.children[1].innerText = "Server Error"; }
-    } catch (error) { textContainer.children[1].innerText = "Network Error"; }
+        if (textContainer) {
+            textContainer.children[1].innerText = data.success ? "Emails Dispatched" : "Server Error";
+        }
+    } catch (error) {
+        if (textContainer) textContainer.children[1].innerText = "Network Error";
+    } finally {
+        // ✅ Reset after 4 seconds regardless of success/failure
+        setTimeout(() => {
+            isSOSActive = false;
+            btn.classList.remove('sos-active');
+            if (textContainer) {
+                textContainer.children[0].innerText = "SOS";
+                textContainer.children[1].innerText = "Tap Twice!";
+            }
+        }, 4000);
+    }
 }
+
+function hideActivatedBadge() {
+    const activatedBadge = document.getElementById('activatedBadge'); // Make sure this matches your HTML ID
+    
+    if (!activatedBadge) return;
+
+    // Optional: Fade out smoothly before hiding (if using CSS class)
+    activatedBadge.classList.add('opacity-0', 'transition-opacity', 'duration-1000');
+
+    // Wait 5 seconds (5000ms) then remove from display
+    setTimeout(() => {
+        activatedBadge.style.display = 'none'; 
+        
+        // Reset styles for next activation (optional)
+        setTimeout(() => {
+            activatedBadge.classList.remove('opacity-0');
+            activatedBadge.style.opacity = ''; // Clear inline style
+        }, 1000); // Wait for transition to finish
+        
+    }, 5000); 
+}
+
 
 function shareLocation() {
     if (!userLocation) return alert("Waiting for GPS...");
