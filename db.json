@@ -1,0 +1,23 @@
+{
+  "users": [
+    {
+      "id": 1777191253333,
+      "name": "Veda Sawant",
+      "email": "veda@gmail.com",
+      "password": "$2b$10$np28eFw6sVCj6DnR/5lOQemFDf9QHZ192D/qI8jWKQptcYSbMRukG",
+      "age": 20,
+      "phone": "12345",
+      "contacts": []
+    }
+  ],
+  "dangerReports": [
+    {
+      "id": 1777191355670,
+      "lat": 19.22892599302287,
+      "lng": 72.85000920295717,
+      "type": "Suspicious",
+      "reportCount": 1,
+      "lastReported": 1777191355670
+    }
+  ]
+}
