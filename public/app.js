@@ -1,3 +1,18 @@
+// ─── CONFIG ───────────────────────────────────────────────────────────────────
+const API_BASE = 'http://127.0.0.1:3000';
+
+// ─── AUTH HELPER ──────────────────────────────────────────────────────────────
+function authFetch(url, options = {}) {
+    const token = sessionStorage.getItem('ss_token');
+    return fetch(`${API_BASE}${url}`, {
+        ...options,
+        headers: {
+            ...(options.headers || {}),
+            'Authorization': `Bearer ${token}`
+        }
+    });
+}
+
 // ─── STATE ────────────────────────────────────────────────────────────────────
 let map, userMarker;
 let userLocation = null;
@@ -14,6 +29,9 @@ let mediaRecorder;
 let audioChunks = [];
 let isRecording = false;
 let lastRecordedBlob = null;
+
+// FIX: named so it can be cleared — was leaking before
+let callTimer = null;
 
 const alarmAudio = new Audio('https://assets.mixkit.co/active_storage/sfx/995/995-preview.mp3');
 alarmAudio.loop = true;
@@ -58,15 +76,16 @@ async function handleLogin() {
     const password = document.getElementById('login-password').value;
     if (!email || !password) return showAuthError('Please fill in all fields.');
     try {
-        const res = await fetch('http://localhost:3000/api/login', {
+        const res = await fetch(`${API_BASE}/api/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
         });
         const data = await res.json();
-        if (!data.success) return showAuthError(data.error || 'Login failed.');
+        if (!res.ok || !data.success) return showAuthError(data.error || 'Login failed.');
         currentUser = data.user;
         sessionStorage.setItem('ss_user', JSON.stringify(currentUser));
+        sessionStorage.setItem('ss_token', data.token);
         bootApp();
     } catch {
         showAuthError('Cannot reach server. Is it running?');
@@ -81,15 +100,16 @@ async function handleRegister() {
     const password = document.getElementById('reg-password').value;
     if (!name || !age || !email || !phone || !password) return showAuthError('All fields are required.');
     try {
-        const res = await fetch('http://localhost:3000/api/register', {
+        const res = await fetch(`${API_BASE}/api/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name, age, email, phone, password })
         });
         const data = await res.json();
-        if (!data.success) return showAuthError(data.error || 'Registration failed.');
+        if (!res.ok || !data.success) return showAuthError(data.error || 'Registration failed.');
         currentUser = data.user;
         sessionStorage.setItem('ss_user', JSON.stringify(currentUser));
+        sessionStorage.setItem('ss_token', data.token);
         bootApp();
     } catch {
         showAuthError('Cannot reach server. Is it running?');
@@ -111,6 +131,7 @@ function bootApp() {
 
 function handleLogout() {
     sessionStorage.removeItem('ss_user');
+    sessionStorage.removeItem('ss_token');
     currentUser = null;
     location.reload();
 }
@@ -118,7 +139,7 @@ function handleLogout() {
 async function handleDeactivate() {
     if (!confirm('This will permanently delete your account. Are you sure?')) return;
     try {
-        await fetch('http://localhost:3000/api/deactivate', {
+        await authFetch('/api/deactivate', {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: currentUser.email })
@@ -144,7 +165,7 @@ function toggleSettings() {
 // ─── EMERGENCY CONTACTS ───────────────────────────────────────────────────────
 async function loadContacts() {
     try {
-        const res = await fetch(`http://localhost:3000/api/contacts?email=${currentUser.email}`);
+        const res = await authFetch('/api/contacts');
         const data = await res.json();
         if (data.success) emergencyContacts = data.contacts;
     } catch {}
@@ -206,10 +227,11 @@ function deleteContact(index) {
 
 async function saveContacts() {
     try {
-        const res = await fetch('http://localhost:3000/api/contacts', {
+        const res = await authFetch('/api/contacts', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: currentUser.email, contacts: emergencyContacts })
+            // FIX: no longer sends email in body — JWT identifies the user server-side
+            body: JSON.stringify({ contacts: emergencyContacts })
         });
         const data = await res.json();
         if (data.success) toggleContacts();
@@ -359,7 +381,7 @@ async function toggleRecording() {
     const btnBox = document.getElementById('record-box');
 
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        alert('Audio recording not supported'); return;
+        alert('Audio recording not supported on this device.'); return;
     }
 
     if (!isRecording) {
@@ -380,7 +402,7 @@ async function toggleRecording() {
             btnBox.classList.replace('bg-purple-100', 'bg-rose-500');
             btnBox.classList.add('text-white', 'animate-pulse');
             btnText.innerText = 'STOP';
-        } catch { alert('Mic access denied'); }
+        } catch { alert('Microphone access denied.'); }
     } else {
         mediaRecorder.stop();
         isRecording = false;
@@ -403,8 +425,12 @@ function startFakeConversation() {
     const status = document.getElementById('caller-status');
     status.classList.replace('text-emerald-500', 'text-white');
     status.classList.remove('animate-pulse');
+
+    // FIX: clear previous timer before starting a new one
+    if (callTimer) clearInterval(callTimer);
+
     let callSeconds = 0;
-    setInterval(() => {
+    callTimer = setInterval(() => {
         callSeconds++;
         const mins = String(Math.floor(callSeconds / 60)).padStart(2, '0');
         const secs = String(callSeconds % 60).padStart(2, '0');
@@ -412,14 +438,18 @@ function startFakeConversation() {
     }, 1000);
 }
 
-function closeFakeCall() { document.getElementById('fake-call').classList.add('hidden'); }
+function closeFakeCall() {
+    // FIX: always kill the interval on close
+    if (callTimer) { clearInterval(callTimer); callTimer = null; }
+    document.getElementById('fake-call').classList.add('hidden');
+}
 
 // ─── SOS ──────────────────────────────────────────────────────────────────────
 function setupSOSDoubleTap() {
     const btn = document.getElementById('sos-btn');
     let lastTap = 0;
     btn.addEventListener('touchend', (e) => {
-        const now = new Date().getTime();
+        const now = Date.now();
         if (now - lastTap < 500 && now - lastTap > 0) { triggerSOS(); e.preventDefault(); }
         lastTap = now;
     });
@@ -435,27 +465,44 @@ async function triggerSOS() {
     const textContainer = btn.querySelector('.text-left');
     if (textContainer) {
         textContainer.children[0].innerText = 'ACTIVATED';
-        textContainer.children[1].innerText = 'Alerting Server...';
+        textContainer.children[1].innerText = 'Alerting contacts...';
     }
 
     toggleAlarm();
     if (navigator.vibrate) navigator.vibrate([1000, 500, 1000]);
 
+    // FIX: use real saved emergency contacts — no more hardcoded emails
+    const contactsToAlert = emergencyContacts.filter(c => c.email && c.email.includes('@'));
+    if (contactsToAlert.length === 0) {
+        if (textContainer) textContainer.children[1].innerText = 'No contacts saved!';
+        alert('⚠️ Add emergency contacts in Settings before using SOS.');
+        isSOSActive = false;
+        btn.classList.remove('sos-active');
+        if (textContainer) {
+            textContainer.children[0].innerText = 'SOS';
+            textContainer.children[1].innerText = 'Tap Twice!';
+        }
+        return;
+    }
+
     const formData = new FormData();
-    formData.append('lat', userLocation ? userLocation.lat : '21.1458');
-    formData.append('lng', userLocation ? userLocation.lng : '79.0882');
-    formData.append('contacts', JSON.stringify([
-        { name: 'Dad', email: 'blizzardhellfire@gmail.com' },
-        { name: 'Support', email: 'vedasawant2005@gmail.com' }
-    ]));
+    formData.append('lat', userLocation ? userLocation.lat : '');
+    formData.append('lng', userLocation ? userLocation.lng : '');
+    formData.append('contacts', JSON.stringify(contactsToAlert));
+    formData.append('userName', currentUser.name);
+    formData.append('userPhone', currentUser.phone || '');
     if (lastRecordedBlob) formData.append('evidence', lastRecordedBlob, 'evidence.webm');
 
     try {
-        const response = await fetch('http://localhost:3000/api/sos', { method: 'POST', body: formData });
+        const response = await fetch(`${API_BASE}/api/sos`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${sessionStorage.getItem('ss_token')}` },
+            body: formData
+        });
         const data = await response.json();
-        if (textContainer) textContainer.children[1].innerText = data.success ? 'Emails Dispatched' : 'Server Error';
+        if (textContainer) textContainer.children[1].innerText = data.success ? '✓ Contacts Alerted' : 'Server Error!';
     } catch {
-        if (textContainer) textContainer.children[1].innerText = 'Network Error';
+        if (textContainer) textContainer.children[1].innerText = 'Network Error!';
     } finally {
         setTimeout(() => {
             isSOSActive = false;
@@ -473,7 +520,7 @@ function shareLocation() {
     if (!userLocation) return alert('Waiting for GPS...');
     const url = `https://maps.google.com/maps?q=${userLocation.lat},${userLocation.lng}`;
     if (navigator.share) { navigator.share({ title: 'My Live Location', url }); }
-    else { navigator.clipboard.writeText(url); alert('Link copied!'); }
+    else { navigator.clipboard.writeText(url); alert('Location link copied!'); }
 }
 
 // ─── DANGER ZONES ─────────────────────────────────────────────────────────────
