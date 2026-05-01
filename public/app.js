@@ -1,6 +1,30 @@
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
 const API_BASE = 'http://127.0.0.1:3000';
 
+// ─── ROTATING QUOTES DATA ─────────────────────────────────────────────────────
+const safetyQuotes = [
+    "Your safety is non-negotiable.",
+    "Walk with purpose, and be aware of your surroundings.",
+    "Trust your intuition. It's often right.",
+    "Awareness is your first line of defense.",
+    "Empower yourself to be safe.",
+    "Your life is your most precious possession. Protect it.",
+    "Safety is not an option, it's a necessity.",
+    "Be the master of your own environment.",
+    "Knowledge is your armor.",
+    "Walk tall, speak confidently, and be prepared.",
+    "Prevention is the best cure for danger.",
+    "Strength isn't just physical; it's being prepared.",
+    "A woman's place is wherever she feels safe.",
+    "Self-protection is not selfishness; it's a duty.",
+    "Empowerment begins with safety.",
+    "No one can protect you better than you can.",
+    "A woman's safety is not a request; it's a right.",
+    "Safety is not an afterthought.",
+    "The first step to safety is self-care.",
+    "Walk with confidence, for your safety is your priority."
+];
+
 // ─── AUTH HELPER ──────────────────────────────────────────────────────────────
 function authFetch(url, options = {}) {
     const token = sessionStorage.getItem('ss_token');
@@ -30,7 +54,6 @@ let audioChunks = [];
 let isRecording = false;
 let lastRecordedBlob = null;
 
-// FIX: named so it can be cleared — was leaking before
 let callTimer = null;
 
 const alarmAudio = new Audio('https://assets.mixkit.co/active_storage/sfx/995/995-preview.mp3');
@@ -40,6 +63,8 @@ let dangerZones = JSON.parse(localStorage.getItem('ss_danger_zones_v2')) || [];
 
 // ─── BOOT ─────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+    initQuoteRotation(); // Start the quotes immediately on auth screen
+    
     const saved = sessionStorage.getItem('ss_user');
     if (saved) {
         currentUser = JSON.parse(saved);
@@ -47,17 +72,39 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// ─── ROTATING QUOTES LOGIC ────────────────────────────────────────────────────
+function initQuoteRotation() {
+    const quoteEl = document.getElementById('safety-quote');
+    if (!quoteEl) return;
+    
+    let currentQuoteIdx = 0;
+    
+    setInterval(() => {
+        // Fade out
+        quoteEl.style.opacity = 0;
+        
+        setTimeout(() => {
+            // Change text
+            currentQuoteIdx = (currentQuoteIdx + 1) % safetyQuotes.length;
+            quoteEl.innerText = `"${safetyQuotes[currentQuoteIdx]}"`;
+            
+            // Fade in
+            quoteEl.style.opacity = 1;
+        }, 1000); // Matches the Tailwind duration-1000 class (1 second)
+    }, 6000); // Trigger a change every 6 seconds
+}
+
 // ─── AUTH ─────────────────────────────────────────────────────────────────────
 function switchAuthTab(tab) {
     const isLogin = tab === 'login';
     document.getElementById('form-login').classList.toggle('hidden', !isLogin);
     document.getElementById('form-register').classList.toggle('hidden', isLogin);
     document.getElementById('tab-login').className = isLogin
-        ? 'auth-tab-active flex-1 py-2 rounded-lg text-sm font-bold transition-all'
-        : 'auth-tab-inactive flex-1 py-2 rounded-lg text-sm font-bold transition-all';
+        ? 'auth-tab-active text-sm font-bold transition-all flex-1 text-center'
+        : 'auth-tab-inactive text-sm font-bold transition-all flex-1 text-center';
     document.getElementById('tab-register').className = !isLogin
-        ? 'auth-tab-active flex-1 py-2 rounded-lg text-sm font-bold transition-all'
-        : 'auth-tab-inactive flex-1 py-2 rounded-lg text-sm font-bold transition-all';
+        ? 'auth-tab-active text-sm font-bold transition-all flex-1 text-center'
+        : 'auth-tab-inactive text-sm font-bold transition-all flex-1 text-center';
     clearAuthError();
 }
 
@@ -230,7 +277,6 @@ async function saveContacts() {
         const res = await authFetch('/api/contacts', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            // FIX: no longer sends email in body — JWT identifies the user server-side
             body: JSON.stringify({ contacts: emergencyContacts })
         });
         const data = await res.json();
@@ -393,8 +439,10 @@ async function toggleRecording() {
             mediaRecorder.onstop = () => {
                 lastRecordedBlob = new Blob(audioChunks, { type: 'audio/webm' });
                 stream.getTracks().forEach(t => t.stop());
-                btnText.innerText = 'SAVED';
-                setTimeout(() => btnText.innerText = 'RECORD', 2000);
+                if (!isSOSActive) {
+                    btnText.innerText = 'SAVED';
+                    setTimeout(() => btnText.innerText = 'RECORD', 2000);
+                }
             };
             mediaRecorder.start();
             isRecording = true;
@@ -426,7 +474,6 @@ function startFakeConversation() {
     status.classList.replace('text-emerald-500', 'text-white');
     status.classList.remove('animate-pulse');
 
-    // FIX: clear previous timer before starting a new one
     if (callTimer) clearInterval(callTimer);
 
     let callSeconds = 0;
@@ -439,7 +486,6 @@ function startFakeConversation() {
 }
 
 function closeFakeCall() {
-    // FIX: always kill the interval on close
     if (callTimer) { clearInterval(callTimer); callTimer = null; }
     document.getElementById('fake-call').classList.add('hidden');
 }
@@ -471,7 +517,24 @@ async function triggerSOS() {
     toggleAlarm();
     if (navigator.vibrate) navigator.vibrate([1000, 500, 1000]);
 
-    // FIX: use real saved emergency contacts — no more hardcoded emails
+    if (isRecording && mediaRecorder && mediaRecorder.state !== 'inactive') {
+        await new Promise(resolve => {
+            mediaRecorder.addEventListener('stop', () => {
+                setTimeout(resolve, 50); 
+            }, { once: true });
+            
+            mediaRecorder.stop();
+            isRecording = false;
+            
+            const btnIcon = document.getElementById('record-icon');
+            const btnText = document.getElementById('record-text');
+            const btnBox = document.getElementById('record-box');
+            if (btnIcon) btnIcon.classList.replace('fa-stop', 'fa-microphone');
+            if (btnBox) { btnBox.classList.replace('bg-rose-500', 'bg-purple-100'); btnBox.classList.remove('text-white', 'animate-pulse'); }
+            if (btnText) btnText.innerText = 'RECORD';
+        });
+    }
+
     const contactsToAlert = emergencyContacts.filter(c => c.email && c.email.includes('@'));
     if (contactsToAlert.length === 0) {
         if (textContainer) textContainer.children[1].innerText = 'No contacts saved!';
@@ -518,7 +581,7 @@ async function triggerSOS() {
 // ─── SHARE ────────────────────────────────────────────────────────────────────
 function shareLocation() {
     if (!userLocation) return alert('Waiting for GPS...');
-    const url = `https://maps.google.com/maps?q=${userLocation.lat},${userLocation.lng}`;
+    const url = `http://googleusercontent.com/maps.google.com/maps?q=${userLocation.lat},${userLocation.lng}`;
     if (navigator.share) { navigator.share({ title: 'My Live Location', url }); }
     else { navigator.clipboard.writeText(url); alert('Location link copied!'); }
 }

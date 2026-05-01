@@ -94,24 +94,57 @@ body {
     transform: translateY(0) !important;
 }
 
-/* NEW: Safe Places Top Bar */
+/* Safe Places Top Bar */
 #safe-bar {
     box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
-/* NEW: Auth Screen Polish */
-#auth-screen input {
-    border: 2px solid transparent;
-    transition: all 0.2s;
-}
-#auth-screen input:focus {
-    border-color: #e11d48;
-    outline: none;
-    box-shadow: 0 0 0 4px rgba(225, 29, 72, 0.2);
-}
-
-/* Make new modals consistent */
+/* Modals */
 #contacts-sheet, #settings-sheet {
     max-height: 85vh;
     overflow-y: auto;
 }
+
+/* --- 3. REFINED SPLIT-SCREEN AUTH UI --- */
+#auth-screen {
+    background-color: #0f172a; 
+}
+
+.auth-tab-active {
+    color: white !important;
+    border-bottom: 2px solid #e11d48 !important;
+    background: transparent !important;
+    border-radius: 0 !important;
+    padding-bottom: 12px !important;
+}
+.auth-tab-inactive {
+    color: #64748b !important;
+    border-bottom: 2px solid transparent !important;
+    background: transparent !important;
+    border-radius: 0 !important;
+    padding-bottom: 12px !important;
+}
+.auth-tab-active:hover, .auth-tab-inactive:hover {
+    color: white !important;
+}
+
+.auth-input {
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: white;
+    transition: all 0.2s ease;
+}
+.auth-input::placeholder { color: #64748b; }
+.auth-input:focus {
+    outline: none;
+    border-color: #e11d48;
+    background: #0f172a;
+    box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.15);
+}
+
+.auth-btn {
+    background: #e11d48;
+    transition: all 0.2s;
+}
+.auth-btn:hover { background: #be123c; transform: translateY(-1px); }
+.auth-btn:active { transform: translateY(0); }
